@@ -8,9 +8,8 @@ DEBUG = True
 
 # Connect to the database
 
-
 # TODO IMPLEMENT DATABASE URL ((Done))
-SQLALCHEMY_DATABASE_URI = 'postgresql://muath:raghdoosh0@127.0.0.1:5432/fyyurdb'
+SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 
 ### Muath TODO: Extar config parameter to silence the FSADeprecationWarning from flask-sqlalchemy ((Done))
 SQLALCHEMY_TRACK_MODIFICATIONS = False

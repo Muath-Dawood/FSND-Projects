@@ -15,6 +15,7 @@ from flask_wtf import Form
 from forms import *
 ### Muath TODO: import Migrate class from Flask-Migrate ((Done))
 from flask_migrate import Migrate
+from models import *
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -28,88 +29,8 @@ db = SQLAlchemy(app)
 ### Muath TODO: define migrate instence for the app and db ((Done))
 migrate = Migrate(app,db,compare_type=True)
 #----------------------------------------------------------------------------#
-# Models.
+# Models. Review TODO : Move all models to Models.py
 #----------------------------------------------------------------------------#
-### Muath TODO: Implement a genre model ((Done))
-class Genre(db.Model):
-    __tablename__ = 'genre'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True)
-
-    def __repr__(self):
-      return f'<Genre {self.id}: {self.name}>'
-
-### Muath TODO: Implement an association table venue_themes ((Done))
-venue_themes = db.Table('venue_themes',
-db.Column('venue_id', db.Integer, db.ForeignKey('venue.id'), primary_key=True),
-db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True))
-
-class Venue(db.Model):
-  ### Muath TODO: changing table name to lower case i.e:venue (it's annoying to put the name in double qoutes when using psql to inspect the database!) ((Done))
-    __tablename__ = 'venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean, default=False)
-    seeking_description = db.Column(db.String)
-    genres = db.relationship('Genre', secondary=venue_themes, backref=db.backref('venues', lazy=True))
-    shows = db.relationship('Show', backref='venue', lazy=True)
-
-    def __repr__(self):
-      return f'<Venue {self.id}: {self.name}>'
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate ((Done))
-
-### Muath TODO: Implement an association table artist_themes ((Done))
-artist_themes = db.Table('artist_themes',
-db.Column('artist_id', db.Integer, db.ForeignKey('artist.id'), primary_key=True),
-db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True))
-
-class Artist(db.Model):
-    ### Muath TODO: changing table names to lower case i.e:artist (it's annoying to put the name in double qoutes when using psql to inspect the database!) ((Done))
-    __tablename__ = 'artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    ### Muath TODO: removing the genres column and have it in seprate table ((Done))
-    ### genres = db.Column(db.String(120)) ###
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean, default=False)
-    seeking_description = db.Column(db.String)
-    genres = db.relationship('Genre', secondary=artist_themes, backref=db.backref('artists', lazy=True))
-    shows = db.relationship('Show', backref='artist', lazy=True)
-
-    def __repr__(self):
-      return f'<Artist {self.id}: {self.name}>'
-    
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate ((Done))
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. ((Done))
-
-### Muath TODO: Implement a show model ((Done))
-class Show(db.Model):
-    __tablename__ = 'show'
-
-    id = db.Column(db.Integer, primary_key=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
-    start_time = db.Column(db.DateTime(timezone=True))
-
-    def __repr__(self):
-      return f'<Show {self.id}: Artist {self.artist_id} at Venue {self.venue_id}>'
 
 ### Muath TODO: implement a function to populate the genre table in the database with a list of genres as specified in the form.py module.
 def populate_genre():
@@ -396,7 +317,7 @@ def show_artist(artist_id):
   # shows the artist page with the given artist_id
   # TODO: replace with real artist data from the artist table, using artist_id ((Done))
   todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
-  artist_data = Venue.query.filter_by(id=venue_id).first()
+  artist_data = Artist.query.filter_by(id=artist_id).first()
   past_shows_data = db.session.query(Show).join(Artist).filter(Show.start_time < todays_datetime).filter(Artist.id==artist_data.id).all()
   upcoming_shows_data = db.session.query(Show).join(Artist).filter(Show.start_time > todays_datetime).filter(Artist.id==artist_data.id).all()
   
@@ -415,13 +336,13 @@ def show_artist(artist_id):
     "past_shows": [{
       "venue_id": show.venue.id,
       "venue_name": show.artist.name,
-      "venue_image_link": shows.venue.image_link,
+      "venue_image_link": show.venue.image_link,
       "start_time": str(show.start_time)
     } for show in past_shows_data],
     "upcoming_shows": [{
       "venue_id": show.venue.id,
       "venue_name": show.artist.name,
-      "venue_image_link": shows.venue.image_link,
+      "venue_image_link": show.venue.image_link,
       "start_time": str(show.start_time)
     } for show in upcoming_shows_data],
     "past_shows_count": len(past_shows_data),
