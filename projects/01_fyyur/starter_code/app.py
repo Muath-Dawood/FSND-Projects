@@ -15,7 +15,6 @@ from flask_wtf import Form
 from forms import *
 ### Muath TODO: import Migrate class from Flask-Migrate ((Done))
 from flask_migrate import Migrate
-from models import *
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -31,6 +30,7 @@ migrate = Migrate(app,db,compare_type=True)
 #----------------------------------------------------------------------------#
 # Models. Review TODO : Move all models to Models.py
 #----------------------------------------------------------------------------#
+from models import *
 
 ### Muath TODO: implement a function to populate the genre table in the database with a list of genres as specified in the form.py module.
 def populate_genre():
